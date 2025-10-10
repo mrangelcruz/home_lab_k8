@@ -1,0 +1,21 @@
+# Replace "your-unique-bucket-name" with your chosen name
+export BUCKET_NAME="home-lab-bucket"
+export AWS_REGION="us-west-2"# Or your preferred region
+
+# Create the bucket
+aws s3api create-bucket \
+    --bucket ${BUCKET_NAME} \
+    --region ${AWS_REGION}
+
+# Enable versioning to keep a history of your state files
+aws s3api put-bucket-versioning \
+    --bucket ${BUCKET_NAME} \
+    --versioning-configuration Status=Enabled
+
+# Enable server-side encryption for security
+aws s3api put-bucket-encryption \
+    --bucket ${BUCKET_NAME} \
+    --server-side-encryption-configuration '{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}'
+
+echo "✅ S3 bucket '${BUCKET_NAME}' created with versioning and encryption."
+
