@@ -84,42 +84,22 @@ bash
     ./backup-cluster.sh
 
 This will create a timestamped snapshot file in /var/backups/k8s/. You can run this periodically or whenever you're about to make a significant change to your cluster.
-How to Restore from a Backup
+
+## How to Restore from a Backup
 Restoring is more involved and requires downtime, as you need to stop the control-plane to replace the database. Here is the process:
 
 🚨 Important: Only perform a restore if your cluster is truly broken.
 
-SSH into your ac-dream control-plane node.
+__[1] Find out which backup file you want__
 
-Identify the snapshot file you want to restore from (e.g., /var/backups/k8s/etcd-snapshot-2024-10-26_10-30-00.db).
 
-Stop the Kubernetes control-plane components. The easiest way to do this is to temporarily move their manifest files so kubelet stops them.
+    ls -g --time=birth /var/backups/k8s/
 
-bash
- Show full code block 
-sudo mv /etc/kubernetes/manifests/etcd.yaml /tmp/
-sudo mv /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/
-sudo mv /etc/kubernetes/manifests/kube-controller-manager.yaml /tmp/
-sudo mv /etc/kubernetes/manifests/kube-scheduler.yaml /tmp/
-# Wait a moment for the pods to terminate
-sleep 15
-Run the etcdctl restore command. This command will create a new etcd data directory from your snapshot.
+    total 4752
+    -rw------- 1 root 2428960 10月 10 08:11 etcd-snapshot-2025-10-10_08-11-38.db
+    -rw------- 1 root 2428960 10月 10 08:12 etcd-snapshot-2025-10-10_08-12-31.db
 
-bash
- Show full code block 
-# Remove the old, corrupted data directory
-sudo rm -rf /var/lib/etcd/
+__[2] Run the restor scripot__
 
-# Restore from your backup file
-sudo etcdctl snapshot restore /var/backups/k8s/<your-snapshot-file.db> \
-  --data-dir /var/lib/etcd
-(Note: etcdctl should be installed on your control-plane. If not, run sudo apt-get install etcd-client)
+    ./restore-cluster.sh /var/backups/k8s/etcd-snapshot-2025-10-10_08-12-31.db
 
-Restart the control-plane. Move the manifests back into place, and kubelet will restart everything with the restored data.
-
-bash
-sudo mv /tmp/etcd.yaml /etc/kubernetes/manifests/
-sudo mv /tmp/kube-apiserver.yaml /etc/kubernetes/manifests/
-sudo mv /tmp/kube-controller-manager.yaml /etc/kubernetes/manifests/
-sudo mv /tmp/kube-scheduler.yaml /etc/kubernetes/manifests/
-Your cluster will come back online in the exact state it was in when you took the snapshot.
