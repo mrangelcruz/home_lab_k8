@@ -1,1 +1,10 @@
-.terraform*
+# Local Terraform state files
+terraform.tfstate
+terraform.tfstate.*
+.terraform.lock.hcl
+
+# .terraform directory
+.terraform/
+
+# Generated files
+.gen/
