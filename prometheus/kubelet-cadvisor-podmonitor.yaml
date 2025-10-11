@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kubelet-cadvisor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kubelet
+  namespaceSelector:
+    matchNames:
+      - kube-system
+  podMetricsEndpoints:
+    - port: http-metrics
+      path: /metrics/cadvisor
+      interval: 30s
