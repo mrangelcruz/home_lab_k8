@@ -16,6 +16,11 @@ echo "🚀 Preparing Raspberry Pi to join a Kubernetes cluster as a worker node.
 echo "🧹 Performing pre-emptive cleanup to ensure idempotency..."
 sudo kubeadm reset -f || true
 sudo rm -rf /etc/cni/net.d
+# Clean up stale network interfaces and flannel config to prevent CNI conflicts
+sudo ip link set cni0 down || true
+sudo ip link del cni0 || true
+sudo ip link set flannel.1 down || true
+sudo ip link del flannel.1 || true
 
 echo "🔧 Preparing node for Kubernetes..."
 
@@ -67,10 +72,14 @@ sudo systemctl enable containerd
 
 echo "   - Disabling swap..."
 sudo swapoff -a
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+# Remove any swap entry from /etc/fstab to prevent it from being re-enabled on boot
+sudo sed -i '/swap/d' /etc/fstab
 
 echo "🤝 Joining the cluster..."
 sudo $KUBEADM_JOIN_COMMAND
+
+echo "✅ Enabling kubelet to start on boot..."
+sudo systemctl enable --now kubelet
 
 echo "🎉 This node has successfully joined the cluster!"
 echo "   Run 'kubectl get nodes' on your control-plane to see this new worker."

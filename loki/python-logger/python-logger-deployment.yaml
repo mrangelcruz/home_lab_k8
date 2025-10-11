@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-logger
+  namespace: monitoring
+  labels:
+    app: python-logger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-logger
+  template:
+    metadata:
+      labels:
+        app: python-logger
+        job: python-logger   # Promtail label
+    spec:
+      containers:
+      - name: python-logger
+        image: mrangelcruz1960/python-logger:latest
+        imagePullPolicy: Always
+

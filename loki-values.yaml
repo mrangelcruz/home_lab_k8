@@ -1,0 +1,21 @@
+# Custom values to override the loki-stack chart for a resource-constrained environment like a Raspberry Pi.
+
+loki:
+  # Reduce resource requests and limits significantly.
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+promtail:
+  # Also reduce resources for the log collection agent.
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi

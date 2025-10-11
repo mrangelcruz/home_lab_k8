@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: safe-memory-hog
+  namespace: test-sandbox
+spec:
+  restartPolicy: Never
+  nodeSelector:
+    kubernetes.io/hostname: rpi-worker
+  containers:
+  - name: hog
+    image: python:3.11-slim
+    command: ["python3","-c"]
+    args:
+      - "a=['x'*1024*1024 for _ in range(1500)]; import time; time.sleep(600)"
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"

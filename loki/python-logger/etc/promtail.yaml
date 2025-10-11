@@ -1,0 +1,56 @@
+server:
+  log_level: info
+  log_format: logfmt
+  http_listen_port: 3101
+
+clients:
+  - url: http://loki-stack:3100/loki/api/v1/push
+
+positions:
+  filename: /run/promtail/positions.yaml
+
+scrape_configs:
+  # Standard Kubernetes pods
+  - job_name: kubernetes-pods
+    pipeline_stages:
+      - cri: {}
+    kubernetes_sd_configs:
+      - role: pod
+
+  # Python logger pods
+  - job_name: python-logger
+    pipeline_stages:
+      - cri: {}  # parse containerd logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: python-logger
+          __path__: /var/log/pods/monitoring_python-logger-*/python-logger/*.log
+        # Optional: prevent Promtail from being blocked if files don't exist yet
+        optional: true
+
+volumes:
+  - name: run
+    emptyDir: {}
+  - name: pods
+    hostPath:
+      path: /var/log/pods
+      type: Directory
+  - name: containers
+    hostPath:
+      path: /var/lib/docker/containers
+      type: Directory
+
+volumeMounts:
+  - mountPath: /run/promtail
+    name: run
+  - mountPath: /var/log/pods
+    name: pods
+    readOnly: true
+  - mountPath: /var/lib/docker/containers
+    name: containers
+    readOnly: true
+
+tracing:
+  enabled: false

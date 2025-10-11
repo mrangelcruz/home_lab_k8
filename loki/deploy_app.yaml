@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-logger
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-logger
+  template:
+    metadata:
+      labels:
+        app: python-logger
+    spec:
+      containers:
+      - name: python-logger
+        image: python:3.12-slim
+        command: ["python", "/app/app.py"]
+        volumeMounts:
+        - name: log-volume
+          mountPath: /var/log
+        workingDir: /app
+        # optional: install requirements if you have any
+        # env:
+        # - name: ...
+      volumes:
+      - name: log-volume
+        emptyDir: {}
+
